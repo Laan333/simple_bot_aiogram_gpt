@@ -1,0 +1,9 @@
+aiogram==3.13.1
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.35
+python-dotenv==1.0.1
+openai==1.51.0
+aiosqlite==0.20.0
+redis==5.0.4
+# Зафиксирован httpx для совместимости с openai>=1.0
+httpx==0.27.2
