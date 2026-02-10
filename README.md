@@ -1,6 +1,6 @@
 # Telegram AI Chatbot
 
-Telegram бот с интеграцией ChatGPT API, использующий aiogram 3 и PostgreSQL/SQLite для хранения контекста диалогов.
+Telegram бот с интеграцией ChatGPT API, использующий aiogram 3 и PostgreSQL/SQLite для хранения контекста диалогов, с поддержкой лимитов частоты запросов в "бесплатном" режиме.
 
 ## 🚀 Возможности
 
@@ -10,12 +10,14 @@ Telegram бот с интеграцией ChatGPT API, использующий 
 - ✅ Сохранение истории диалогов в PostgreSQL или SQLite (переключается через `.env`)
 - ✅ Использование контекста последних 5 сообщений для более качественных ответов
 - ✅ Сброс контекста через команду `/start` или кнопку "Новый запрос"
+- ✅ Опциональный лимит: в "бесплатном" режиме gpt-3.5-turbo — не более одного запроса раз в 3 минуты (через Redis)
 - ✅ Современная архитектура с использованием aiogram 3 и лучших практик
 
 ## 📋 Требования
 
 - Python 3.10+
 - PostgreSQL 12+ **или** SQLite 3 (встроен в Python)
+- (опционально) Redis 6+ — для ограничения частоты запросов в "бесплатном" режиме
 - Telegram Bot Token (получить у [@BotFather](https://t.me/BotFather))
 - OpenAI API Key (получить на [platform.openai.com](https://platform.openai.com/api-keys))
 
@@ -83,6 +85,12 @@ Telegram бот с интеграцией ChatGPT API, использующий 
 
      # Максимальное количество сообщений в контексте (по умолчанию: 5)
      MAX_CONTEXT_MESSAGES=5
+
+     # Включить "бесплатный" режим gpt-3.5-turbo с ограничением частоты запросов (true/false)
+     FREE_VERSION_GPT=false
+
+     # (опционально) DSN Redis для rate limiting; по умолчанию: redis://localhost:6379/0
+     REDIS_URL=redis://localhost:6379/0
      ```
 
 ## 🏃 Запуск
@@ -143,6 +151,8 @@ telegram-ai-chatbot/
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` - настройки PostgreSQL (используются, если `DB_TYPE=postgresql`)
 - `SQLITE_PATH` - путь к файлу SQLite (используется, если `DB_TYPE=sqlite`)
 - `MAX_CONTEXT_MESSAGES` - максимальное количество сообщений в контексте (по умолчанию: 5)
+- `FREE_VERSION_GPT` - если `true` и выбрана модель `gpt-3.5-turbo`, включается "бесплатный" режим с ограничением: не более одного запроса раз в 3 минуты для каждого пользователя
+- `REDIS_URL` - строка подключения к Redis для реализации ограничения частоты запросов (если не указано, используется `redis://localhost:6379/0`)
 
 ## 🗄️ База данных
 
@@ -160,6 +170,7 @@ telegram-ai-chatbot/
 - **PostgreSQL / SQLite** - системы хранения данных
 - **SQLAlchemy** - ORM для работы с БД
 - **asyncpg** и **aiosqlite** - асинхронные драйверы для PostgreSQL и SQLite
+- **Redis** - хранилище для реализации rate limiting в "бесплатном" режиме
 - **OpenAI API** - API для работы с моделями семейства GPT‑4o
 - **python-dotenv** - загрузка переменных окружения
 
@@ -192,3 +203,63 @@ telegram-ai-chatbot/
 ## 👤 Автор
 
 Проект создан для демонстрации работы с aiogram 3, PostgreSQL/SQLite и ChatGPT API.
+
+## 🇺🇸 English Version
+
+### Telegram AI Chatbot
+
+Telegram bot with ChatGPT API integration, built on aiogram 3 and PostgreSQL/SQLite for storing conversation history, with optional rate limiting for a "free" `gpt-3.5-turbo` mode.
+
+### 🚀 Features
+
+- ✅ Handles `/start` and `/help` commands
+- ✅ Integration with ChatGPT (GPT‑4o family models) with Markdown responses
+- ✅ Automatic user language detection (answers in the same language)
+- ✅ Conversation history stored in PostgreSQL or SQLite (switchable via `.env`)
+- ✅ Uses context of the last N messages (configurable, default: 5)
+- ✅ Reset context via `/start` command or **"New request"** button
+- ✅ Optional rate limiting for "free" `gpt-3.5-turbo` mode: at most **one request per user every 3 minutes** (via Redis)
+- ✅ Modern structure based on aiogram 3 and best practices
+
+### 📋 Requirements
+
+- Python 3.10+  
+- PostgreSQL 12+ **or** SQLite 3 (built into Python)  
+- (optional) Redis 6+ — for rate limiting in the "free" mode  
+- Telegram Bot Token (get it from [@BotFather](https://t.me/BotFather))  
+- OpenAI API Key (get it on [platform.openai.com](https://platform.openai.com/api-keys))
+
+### 🛠️ Setup
+
+```bash
+python -m venv venv
+venv\Scripts\activate  # Windows
+# or
+source venv/bin/activate  # Linux/Mac
+
+pip install -r requirements.txt
+```
+
+Copy `.env.example` to `.env` and fill in at least:
+
+```env
+BOT_TOKEN=your_bot_token_here
+OPENAI_API_KEY=your_openai_api_key_here
+
+DB_TYPE=sqlite  # or postgresql
+SQLITE_PATH=db.sqlite3
+
+OPENAI_MODEL=gpt-4o-mini
+MAX_CONTEXT_MESSAGES=5
+
+FREE_VERSION_GPT=false          # set to true to enable "free" gpt-3.5-turbo mode
+REDIS_URL=redis://localhost:6379/0
+```
+
+### 🏃 Run
+
+```bash
+python main.py
+```
+
+The bot will automatically create the required database tables on first run.
