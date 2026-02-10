@@ -25,6 +25,8 @@ class Config:
     openai_model: str = "gpt-4o-mini"
     # Флаг использования "бесплатного" режима gpt-3.5 (ограничение по частоте запросов)
     free_version_gpt: bool = False
+    # Строка подключения к Redis для rate limiting (если используется)
+    redis_url: str = "redis://localhost:6379/0"
 
     # Тип базы данных: postgresql или sqlite
     db_type: str = "postgresql"
@@ -147,6 +149,9 @@ class Config:
         # FREE_VERSION_GPT (true/false)
         raw_free = (os.getenv("FREE_VERSION_GPT") or "false").strip().lower()
         free_version_gpt = raw_free in {"1", "true", "yes", "y"}
+
+        # REDIS_URL (опционально)
+        redis_url = (os.getenv("REDIS_URL") or "redis://localhost:6379/0").strip()
         
         return cls(
             bot_token=bot_token.strip(),
@@ -161,6 +166,7 @@ class Config:
             sqlite_path=sqlite_path,
             free_version_gpt=free_version_gpt,
             max_context_messages=max_context_messages,
+            redis_url=redis_url,
         )
     
     def __repr__(self) -> str:
